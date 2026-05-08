@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>TwinPulse — AI Copilot</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=IBM+Plex+Mono:wght@300;400;600&family=Barlow:wght@300;400;600&display=swap" rel="stylesheet"/>
+
+<style>
+:root{
+  --bg:#000;
+  --panel:#111;
+  --danger:#ff1a1a;
+  --text:#fff;
+  --muted:#b3b3b3;
+  --mono:'IBM Plex Mono',monospace;
+  --display:'Orbitron',sans-serif;
+  --body:'Barlow',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--body);
+  min-height:100vh;
+  display:flex;
+}
+nav{
+  width:220px;
+  background:#050505;
+  border-right:1px solid var(--danger);
+  padding:24px 0;
+}
+.brand{
+  padding:0 20px 24px;
+  border-bottom:1px solid var(--danger);
+}
+.brand-logo{
+  font-family:var(--display);
+  font-size:1.1rem;
+  font-weight:900;
+}
+.nav-links{
+  padding:16px 12px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.nav-item{
+  color:var(--muted);
+  text-decoration:none;
+  padding:10px;
+  border-radius:8px;
+  border:1px solid transparent;
+}
+.nav-item:hover{
+  border-color:var(--danger);
+  color:#fff;
+}
+
+main{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+}
+
+.topbar{
+  padding:18px 24px;
+  border-bottom:1px solid var(--danger);
+  font-family:var(--display);
+  font-size:1.2rem;
+}
+
+.page-desc{
+  margin:16px 24px;
+  padding:14px 18px;
+  border:1px solid var(--danger);
+  border-radius:12px;
+  background:#0a0a0a;
+  color:#d9d9d9;
+  line-height:1.8;
+  font-size:.95rem;
+  opacity:0;
+  transform:translateY(-30px);
+  animation:dropFade 1.4s ease forwards;
+}
+
+@keyframes dropFade{
+  from{
+    opacity:0;
+    transform:translateY(-30px);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+}
+
+.chat-area{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+}
+
+.messages{
+  flex:1;
+  overflow-y:auto;
+  padding:20px 24px;
+}
+
+.msg{
+  background:var(--panel);
+  border:1px solid var(--danger);
+  border-radius:10px;
+  padding:12px;
+  margin-bottom:12px;
+  line-height:1.7;
+}
+
+.input-area{
+  display:flex;
+  gap:10px;
+  padding:20px 24px;
+  border-top:1px solid var(--danger);
+}
+
+.chat-input{
+  flex:1;
+  padding:12px;
+  background:#000;
+  color:#fff;
+  border:1px solid var(--danger);
+  border-radius:10px;
+}
+
+.send-btn{
+  padding:12px 18px;
+  border:none;
+  border-radius:10px;
+  background:#fff;
+  color:#000;
+  cursor:pointer;
+  font-weight:600;
+}
+
+.send-btn:hover{
+  background:var(--danger);
+  color:#fff;
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="brand">
+    <div class="brand-logo">TwinPulse</div>
+  </div>
+
+  <div class="nav-links">
+    <a href="/" class="nav-item">Dashboard</a>
+    <a href="/topology" class="nav-item">Topology</a>
+    <a href="/copilot" class="nav-item">Copilot</a>
+    <a href="/memory" class="nav-item">Memory</a>
+    <a href="/adaptive" class="nav-item">Adaptive</a>
+  </div>
+</nav>
+
+<main>
+  <div class="topbar">AI Copilot Reasoning Console</div>
+
+  <div class="page-desc">
+    Ask the AI Copilot about severity, likely failure reasons,
+    business risk, SOP, and next operator actions.
+    This block converts technical anomaly data into human decision support.
+  </div>
+
+  <div class="chat-area">
+    <div class="messages" id="messages">
+      <div class="msg">
+        Ask about anomaly severity, maintenance SOP, propagation risk, or business impact.
+      </div>
+    </div>
+
+    <div class="input-area">
+      <input
+        id="chatInput"
+        class="chat-input"
+        placeholder="Ask TwinPulse Copilot..."
+      />
+      <button class="send-btn" onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+</main>
+
+<script>
+async function sendMessage() {
+    const input = document.getElementById("chatInput");
+    const msg = input.value.trim();
+    if (!msg) return;
+
+    const messages = document.getElementById("messages");
+
+    messages.innerHTML += `<div class="msg"><b>You:</b> ${msg}</div>`;
+    input.value = "";
+
+    const res = await fetch("/api/copilot-chat", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            message: msg,
+            page: "copilot"
+})
+    });
+
+    const data = await res.json();
+
+    messages.innerHTML += `<div class="msg"><b>AI:</b> ${data.reply}</div>`;
+    messages.scrollTop = messages.scrollHeight;
+}
+</script>
+
+</body>
+</html>

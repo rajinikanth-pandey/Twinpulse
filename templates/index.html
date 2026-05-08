@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>TwinPulse — Command Center</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=IBM+Plex+Mono:wght@300;400;600&family=Barlow:wght@300;400;600&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#000000;
+  --panel:#111111;
+  --danger:#ff1a1a;
+  --text:#ffffff;
+  --muted:#b3b3b3;
+  --mono:'IBM Plex Mono',monospace;
+  --display:'Orbitron',sans-serif;
+  --body:'Barlow',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--body);
+  min-height:100vh;
+  display:flex;
+}
+nav{
+  width:220px;
+  background:#050505;
+  border-right:1px solid var(--danger);
+  padding:24px 0;
+}
+.brand{
+  padding:0 20px 24px;
+  border-bottom:1px solid var(--danger);
+}
+.brand-logo{
+  font-family:var(--display);
+  font-size:1.1rem;
+  font-weight:900;
+}
+.nav-links{
+  padding:16px 12px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.nav-item{
+  color:var(--muted);
+  text-decoration:none;
+  padding:10px;
+  border:1px solid transparent;
+  border-radius:8px;
+}
+.nav-item:hover{
+  border-color:var(--danger);
+  color:#fff;
+}
+main{
+  flex:1;
+  padding:24px;
+  position:relative;
+}
+.panel{
+  background:var(--panel);
+  border:1px solid var(--danger);
+  border-radius:14px;
+  padding:20px;
+  margin-bottom:20px;
+}
+.upload-btn{
+  margin-top:10px;
+  padding:10px 14px;
+  background:#fff;
+  color:#000;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:600;
+}
+.upload-btn:hover{
+  background:var(--danger);
+  color:#fff;
+}
+.page-desc{
+  margin-top:8px;
+  margin-bottom:18px;
+  padding:14px 18px;
+  border:1px solid var(--danger);
+  border-radius:12px;
+  background:#0a0a0a;
+  color:#d9d9d9;
+  line-height:1.8;
+  font-size:.95rem;
+}
+#alertBell{
+  position:absolute;
+  top:24px;
+  right:24px;
+  width:48px;
+  height:48px;
+  border-radius:50%;
+  background:#ff1a1a;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+}
+#alertPanel{
+  position:absolute;
+  top:82px;
+  right:24px;
+  width:320px;
+  padding:14px;
+  background:#0a0a0a;
+  border:1px solid #ff1a1a;
+  border-radius:12px;
+  display:none;
+}
+.alert-item{
+  padding:10px;
+  border:1px solid #ff1a1a;
+  border-radius:10px;
+  background:#111;
+  margin-bottom:10px;
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="brand">
+    <div class="brand-logo">TwinPulse</div>
+  </div>
+  <div class="nav-links">
+    <a href="/" class="nav-item">Dashboard</a>
+    <a href="/topology" class="nav-item">Topology</a>
+    <a href="/copilot" class="nav-item">Copilot</a>
+    <a href="/memory" class="nav-item">Memory</a>
+    <a href="/adaptive" class="nav-item">Adaptive</a>
+  </div>
+</nav>
+
+<main>
+  <div id="alertBell">🔔</div>
+  <div id="alertPanel"></div>
+
+  <div class="page-desc">
+    This is the live command center of TwinPulse.
+    Run live testing to stream synthetic 70-sensor telemetry
+    and validate drift, topology, alerts, and AI reasoning.
+  </div>
+
+  <div class="panel">
+    <h2>Live Testing</h2>
+    <button class="upload-btn" onclick="runLiveDemo()">
+      Start Live Testing
+    </button>
+    <div id="uploadStatus" style="margin-top:10px;"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Concept Drift</h2>
+    <img id="driftGraph" src="" style="width:100%;border-radius:10px;"/>
+  </div>
+
+  <div class="panel">
+    <h2>AI Copilot</h2>
+    <div id="chatBox" style="height:200px;overflow:auto;border:1px solid #333;padding:10px;margin-bottom:10px;"></div>
+    <input id="chatInput" style="width:80%;padding:10px;" placeholder="Ask question"/>
+    <button class="upload-btn" onclick="sendChat()">Send</button>
+  </div>
+</main>
+
+<script>
+const alertBell = document.getElementById("alertBell");
+const alertPanel = document.getElementById("alertPanel");
+
+alertBell.onclick = () => {
+    alertPanel.style.display =
+        alertPanel.style.display === "block" ? "none" : "block";
+};
+
+async function runLiveDemo(showPopup = true) {
+    try {
+        const res = await fetch("/api/live-demo");
+        const data = await res.json();
+
+        document.getElementById("uploadStatus").innerText =
+            `🚨 LIVE: ${data.severity} anomaly at ${data.root_sensor}`;
+
+        document.getElementById("driftGraph").src =
+            "/api/drift-graph?t=" + Date.now();
+
+        alertPanel.innerHTML = `
+            <div class="alert-item">
+                🚨 LIVE ALERT DETECTED<br><br>
+                <b>Root Sensor:</b> ${data.root_sensor}<br>
+                <b>Severity:</b> ${data.severity}<br>
+                <b>Impact Radius:</b> ${data.impact_radius}
+            </div>
+        `;
+
+        // auto popup when page opens
+        if (showPopup) {
+            alertPanel.style.display = "block";
+
+            // auto hide after 8 sec
+            setTimeout(() => {
+                alertPanel.style.display = "none";
+            }, 8000);
+        }
+
+    } catch (err) {
+        document.getElementById("uploadStatus").innerText =
+            "❌ Live test failed";
+        console.error(err);
+    }
+}
+
+async function sendChat() {
+    const input = document.getElementById("chatInput");
+    const msg = input.value;
+    if (!msg) return;
+
+    const res = await fetch("/api/copilot-chat", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({
+            message: msg,
+            page: "dashboard"
+        })
+    });
+
+    const data = await res.json();
+
+    document.getElementById("chatBox").innerHTML += `
+        <div><b>You:</b> ${msg}</div>
+        <div><b>AI:</b> ${data.reply}</div><hr>
+    `;
+
+    input.value = "";
+}
+
+// 🚀 AUTO START WHEN PAGE LOADS
+window.onload = () => {
+    runLiveDemo(true);
+
+    // auto refresh every 20 sec
+    setInterval(() => runLiveDemo(false), 20000);
+};
+</script>
+
+</body>
+</html>

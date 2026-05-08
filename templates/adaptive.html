@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>TwinPulse — Adaptive Learning</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=IBM+Plex+Mono:wght@300;400;600&family=Barlow:wght@300;400;600&display=swap" rel="stylesheet"/>
+
+<style>
+:root{
+  --bg:#000;
+  --panel:#111;
+  --danger:#ff1a1a;
+  --text:#fff;
+  --muted:#b3b3b3;
+  --mono:'IBM Plex Mono',monospace;
+  --display:'Orbitron',sans-serif;
+  --body:'Barlow',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--body);
+  min-height:100vh;
+  display:flex;
+}
+
+nav{
+  width:220px;
+  background:#050505;
+  border-right:1px solid var(--danger);
+  padding:24px 0;
+}
+
+.brand{
+  padding:0 20px 24px;
+  border-bottom:1px solid var(--danger);
+}
+
+.brand-logo{
+  font-family:var(--display);
+  font-size:1.1rem;
+  font-weight:900;
+}
+
+.nav-links{
+  padding:16px 12px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.nav-item{
+  color:var(--muted);
+  text-decoration:none;
+  padding:10px;
+  border-radius:8px;
+  border:1px solid transparent;
+}
+
+.nav-item:hover{
+  border-color:var(--danger);
+  color:#fff;
+}
+
+main{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  padding:24px;
+}
+
+.page-title{
+  font-family:var(--display);
+  font-size:1.4rem;
+}
+
+.page-desc{
+  margin-top:16px;
+  margin-bottom:20px;
+  padding:14px 18px;
+  border:1px solid var(--danger);
+  border-radius:12px;
+  background:#0a0a0a;
+  color:#d9d9d9;
+  line-height:1.8;
+  font-size:.95rem;
+  opacity:0;
+  transform:translateY(-30px);
+  animation:dropFade 1.4s ease forwards;
+}
+
+@keyframes dropFade{
+  from{
+    opacity:0;
+    transform:translateY(-30px);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+}
+
+.panel{
+  background:var(--panel);
+  border:1px solid var(--danger);
+  border-radius:14px;
+  padding:20px;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:20px;
+}
+
+.card{
+  background:#0a0a0a;
+  border:1px solid #333;
+  border-radius:10px;
+  padding:18px;
+  min-height:150px;
+}
+
+.card-title{
+  font-family:var(--mono);
+  font-size:.75rem;
+  color:var(--muted);
+  margin-bottom:10px;
+}
+
+.value{
+  font-size:1rem;
+  line-height:1.8;
+}
+
+.retrain-btn{
+  margin-top:20px;
+  padding:12px 18px;
+  background:#fff;
+  color:#000;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:600;
+}
+
+.retrain-btn:hover{
+  background:var(--danger);
+  color:#fff;
+}
+
+#aiFab{
+  position:fixed;
+  bottom:24px;
+  right:24px;
+  width:58px;
+  height:58px;
+  border-radius:50%;
+  background:#ff1a1a;
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:700;
+  cursor:pointer;
+  z-index:999;
+  box-shadow:0 0 20px rgba(255,26,26,.4);
+}
+
+#aiPanel{
+  position:fixed;
+  bottom:95px;
+  right:24px;
+  width:340px;
+  height:420px;
+  background:#0a0a0a;
+  border:1px solid #ff1a1a;
+  border-radius:14px;
+  display:none;
+  flex-direction:column;
+  z-index:999;
+}
+
+#aiMessages{
+  flex:1;
+  overflow-y:auto;
+  padding:14px;
+}
+
+.ai-msg{
+  border:1px solid #ff1a1a;
+  padding:10px;
+  border-radius:10px;
+  margin-bottom:10px;
+  background:#111;
+}
+
+.aiInputWrap{
+  display:flex;
+  padding:12px;
+  border-top:1px solid #ff1a1a;
+  gap:8px;
+}
+
+#aiInput{
+  flex:1;
+  background:#000;
+  color:#fff;
+  border:1px solid #ff1a1a;
+  padding:10px;
+  border-radius:8px;
+}
+
+.ai-send{
+  padding:10px 14px;
+  border:none;
+  border-radius:8px;
+  background:#fff;
+  cursor:pointer;
+  font-weight:600;
+}
+
+.ai-send:hover{
+  background:#ff1a1a;
+  color:#fff;
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="brand">
+    <div class="brand-logo">TwinPulse</div>
+  </div>
+
+  <div class="nav-links">
+    <a href="/" class="nav-item">Dashboard</a>
+    <a href="/topology" class="nav-item">Topology</a>
+    <a href="/copilot" class="nav-item">Copilot</a>
+    <a href="/memory" class="nav-item">Memory</a>
+    <a href="/adaptive" class="nav-item">Adaptive</a>
+  </div>
+</nav>
+
+<main>
+  <div class="page-title">Adaptive Learning Lifecycle</div>
+
+  <div class="page-desc">
+    This block tracks concept drift, false positives,
+    retraining readiness, and model lifecycle evolution.
+    It helps users understand how TwinPulse improves over time.
+  </div>
+
+  <div class="panel">
+    <div class="grid">
+
+      <div class="card">
+        <div class="card-title">Concept Drift Status</div>
+        <div class="value" id="driftStatus">Stable</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">False Positive Rate</div>
+        <div class="value" id="fpRate">--</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Model Version</div>
+        <div class="value" id="modelVersion">v1</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Deployment Status</div>
+        <div class="value" id="deployStatus">Active</div>
+      </div>
+
+    </div>
+
+    <button class="retrain-btn" onclick="simulateRetrain()">
+      Trigger Retrain
+    </button>
+  </div>
+</main>
+
+<div id="aiFab">AI</div>
+
+<div id="aiPanel">
+  <div id="aiMessages">
+    <div class="ai-msg">Ask anything about adaptive learning.</div>
+  </div>
+
+  <div class="aiInputWrap">
+    <input id="aiInput" placeholder="Ask TwinPulse AI..." />
+    <button class="ai-send" onclick="sendGlobalAI()">Send</button>
+  </div>
+</div>
+
+<script>
+function simulateRetrain() {
+    document.getElementById("driftStatus").innerText = "Moderate Drift";
+    document.getElementById("fpRate").innerText = "0.31";
+    document.getElementById("modelVersion").innerText = "v27";
+    document.getElementById("deployStatus").innerText = "Redeployed";
+}
+
+const fab = document.getElementById("aiFab");
+const panel = document.getElementById("aiPanel");
+
+fab.onclick = () => {
+    panel.style.display =
+        panel.style.display === "flex" ? "none" : "flex";
+};
+
+async function sendGlobalAI() {
+    const input = document.getElementById("aiInput");
+    const msg = input.value.trim();
+    if (!msg) return;
+
+    const messages = document.getElementById("aiMessages");
+
+    messages.innerHTML += `<div class="ai-msg"><b>You:</b> ${msg}</div>`;
+    input.value = "";
+
+    const res = await fetch("/api/copilot-chat", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({
+            message: msg,
+            page: "adaptive"
+})
+    });
+
+    const data = await res.json();
+
+    messages.innerHTML += `<div class="ai-msg"><b>AI:</b> ${data.reply}</div>`;
+    messages.scrollTop = messages.scrollHeight;
+}
+</script>
+
+</body>
+</html>
