@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+jinja2
+python-multipart
+pandas
+numpy
+matplotlib
+plotly
+networkx
+scikit-learn
+scipy
+groq
+tensorflow
+keras
